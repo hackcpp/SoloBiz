@@ -29,22 +29,48 @@ npm install
 
 ### 环境配置
 
+#### 1. 环境变量设置
+
 1. 复制环境变量模板：
 ```bash
 cp .env.local.example .env.local
 ```
 
-2. 配置 Supabase：
-   - 在 [Supabase Dashboard](https://supabase.com/dashboard) 创建新项目
-   - 启用 Google OAuth 并配置重定向 URI
-   - 获取项目 URL 和 API Key
-
-3. 更新 `.env.local`：
+2. 配置环境变量：
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_MASTER_PASSWORD=your_secure_master_password
 ```
+
+> **重要提示**：`NEXT_PUBLIC_MASTER_PASSWORD` 是用于客户端加解密的固定主密码，请确保其足够复杂且安全（建议至少16位，包含大小写字母、数字和特殊字符）。
+
+#### 2. Supabase 项目配置
+
+1. **创建 Supabase 项目**：
+   - 访问 [Supabase Dashboard](https://supabase.com/dashboard)
+   - 点击 "New Project" 创建新项目
+   - 等待项目初始化完成
+
+2. **数据库表创建**：
+   - 在 Supabase Dashboard 中进入 **SQL Editor**
+   - 执行项目中的迁移脚本，或使用 CLI：
+   ```bash
+   npx supabase db push
+   ```
+   - 迁移文件位于 `supabase/migrations/20250301000000_create_api_keys.sql`
+
+3. **配置 Google OAuth**：
+   - 进入 Supabase Dashboard → **Authentication** → **Providers**
+   - 启用 **Google** 提供商
+   - 在 [Google Cloud Console](https://console.cloud.google.com/) 创建 OAuth 2.0 凭据
+   - 将 Supabase 提供的重定向 URL 添加到 Google OAuth 的「已授权的重定向 URI」
+   - 将生成的 Client ID 和 Client Secret 填入 Supabase
+
+4. **获取项目凭据**：
+   - 在 Supabase Dashboard → **Settings** → **API** 中获取：
+     - Project URL（用于 `NEXT_PUBLIC_SUPABASE_URL`）
+     - Anon public key（用于 `NEXT_PUBLIC_SUPABASE_ANON_KEY`）
 
 ### 数据库设置
 
