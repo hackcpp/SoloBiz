@@ -8,63 +8,50 @@ import { decrypt } from '@/lib/crypto'
 import type { ApiKeyRecord } from '@/types'
 import type { SimpleData, PairData } from '@/lib/crypto'
 
-// Mock 数据用于演示
-const MOCK_ITEMS: ApiKeyRecord[] = [
-  {
-    id: '1',
-    user_id: 'demo',
-    name: 'OpenAI API Key',
-    type: 'simple',
-    encrypted_payload: 'demo',
-    iv: 'demo',
-    salt: 'demo',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    user_id: 'demo',
-    name: 'AWS Access Key',
-    type: 'pair',
-    encrypted_payload: 'demo',
-    iv: 'demo',
-    salt: 'demo',
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: '3',
-    user_id: 'demo',
-    name: 'GitHub Token',
-    type: 'simple',
-    encrypted_payload: 'demo',
-    iv: 'demo',
-    salt: 'demo',
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-  },
-]
-
+/**
+ * 密钥库列表组件
+ *
+ * 功能：
+ * - 显示用户的所有加密密钥
+ * - 支持一键复制密钥到剪贴板
+ * - 实时解密和显示密钥
+ * - 错误处理和成功反馈
+ *
+ * 安全特性：
+ * - 密钥仅在需要时解密
+ * - 复制后立即清除内存中的明文
+ * - 密码错误时显示友好提示
+ */
 export function VaultList() {
-  const [items, setItems] = useState<ApiKeyRecord[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // 组件状态
+  const [items, setItems] = useState<ApiKeyRecord[]>([])     // 密钥列表
+  const [loading, setLoading] = useState(true)               // 加载状态
+  const [error, setError] = useState<string | null>(null)    // 错误信息
+  const [successMessage, setSuccessMessage] = useState<string | null>(null) // 成功消息
 
+  // 依赖注入
   const { masterPassword, isUnlocked } = useMasterPassword()
   const { user } = useAuth()
   const supabase = useMemo(() => createBrowserClient(), [])
 
+  /**
+   * 获取用户密钥列表
+   * 从 Supabase 查询当前用户的所有密钥记录
+   */
   const fetchItems = useCallback(async () => {
-    // 如果没有登录用户，使用 mock 数据
     if (!user) {
-      setItems(MOCK_ITEMS)
+      setItems([])
       setLoading(false)
       return
     }
-    
+
     setLoading(true)
     const { data, error: err } = await supabase
       .from('api_keys')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
+
     if (err) {
       setError(err.message)
       setItems([])
@@ -88,8 +75,10 @@ export function VaultList() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
+      return true
     } catch {
       setError('复制失败')
+      return false
     }
   }
 
@@ -102,7 +91,10 @@ export function VaultList() {
         iv: record.iv,
         salt: record.salt,
       })
-      await copyToClipboard(data.key)
+      if (await copyToClipboard(data.key)) {
+        setSuccessMessage(`${record.name} 的 Key 已复制到剪贴板`)
+        setTimeout(() => setSuccessMessage(null), 3000)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '密码校验失败')
     }
@@ -117,7 +109,10 @@ export function VaultList() {
         iv: record.iv,
         salt: record.salt,
       })
-      await copyToClipboard(data.appId)
+      if (await copyToClipboard(data.appId)) {
+        setSuccessMessage(`${record.name} 的 ID 已复制到剪贴板`)
+        setTimeout(() => setSuccessMessage(null), 3000)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '密码校验失败')
     }
@@ -132,7 +127,10 @@ export function VaultList() {
         iv: record.iv,
         salt: record.salt,
       })
-      await copyToClipboard(data.appSecret)
+      if (await copyToClipboard(data.appSecret)) {
+        setSuccessMessage(`${record.name} 的 Secret 已复制到剪贴板`)
+        setTimeout(() => setSuccessMessage(null), 3000)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '密码校验失败')
     }
@@ -157,6 +155,9 @@ export function VaultList() {
   return (
     <section className="vault-section">
       <h2>密钥库</h2>
+      {successMessage && (
+        <p style={{ color: 'var(--success)', fontSize: 14, marginBottom: 12 }}>{successMessage}</p>
+      )}
       {error && (
         <p style={{ color: 'var(--danger)', fontSize: 14, marginBottom: 12 }}>{error}</p>
       )}
@@ -188,7 +189,7 @@ export function VaultList() {
                   <>
                     <button
                       type="button"
-                      className="btn btn-secondary"
+                      className="btn btn-primary"
                       disabled={!isUnlocked}
                       onClick={() => handleCopyId(record)}
                     >

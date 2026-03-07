@@ -64,6 +64,7 @@ main {
   cursor: pointer;
   border: none;
   transition: background 0.15s;
+  min-width: 100px;
 }
 
 .btn-primary {
@@ -88,32 +89,6 @@ main {
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-/* Master password input */
-.master-password-wrap {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.master-password-wrap input {
-  width: 200px;
-  padding: 8px 12px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--bg-input);
-  color: var(--text);
-  font-size: 14px;
-}
-
-.master-password-wrap input::placeholder {
-  color: var(--text-muted);
-}
-
-.master-password-wrap input:focus {
-  outline: none;
-  border-color: var(--accent);
 }
 
 /* Form */
