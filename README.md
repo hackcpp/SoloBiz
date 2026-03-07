@@ -85,6 +85,10 @@ KeyNexus/
 │   ├── VaultList.tsx      # 密钥列表
 │   ├── LoginPage.tsx      # 登录页面
 │   └── providers/         # 上下文提供者
+├── docs/                  # 项目文档
+│   ├── AUTH_GUIDE.md      # 认证与授权指南
+│   ├── PRD.md             # 产品需求文档
+│   └── SETUP.md           # 部署与配置指南
 ├── lib/                   # 工具库
 │   ├── crypto.ts          # 加密/解密函数
 │   └── supabase/          # Supabase 客户端
@@ -131,7 +135,13 @@ CREATE POLICY "Users can only access their own keys" ON api_keys
   FOR ALL USING (auth.uid() = user_id);
 ```
 
-## 📖 使用指南
+## � 文档
+
+- [部署与配置指南](docs/SETUP.md) - 详细的部署和环境配置步骤
+- [认证与授权指南](docs/AUTH_GUIDE.md) - Supabase + Google OAuth 认证方案详解
+- [产品需求文档](docs/PRD.md) - 产品功能和技术架构说明
+
+## �📖 使用指南
 
 ### 添加密钥
 
