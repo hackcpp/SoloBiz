@@ -26,7 +26,7 @@ export function KeyForm() {
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 2000)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

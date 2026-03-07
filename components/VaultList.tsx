@@ -9,9 +9,12 @@ import { createBrowserClient } from '@/lib/supabase/client'
 /**
  * 密钥列表项组件
  */
-function KeyItem({ item, onDelete }: { item: any, onDelete: (id: string) => Promise<void> }) {
+function KeyItem({ item, onDelete, onShowToast }: { 
+  item: any, 
+  onDelete: (id: string) => Promise<void>,
+  onShowToast: (msg: string, type?: 'success' | 'error') => void
+}) {
   const { masterPassword, isUnlocked } = useMasterPassword()
-  const [copying, setCopying] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -28,20 +31,22 @@ function KeyItem({ item, onDelete }: { item: any, onDelete: (id: string) => Prom
 
       // 2. 获取目标内容
       let text = ''
+      let fieldLabel = ''
       if (item.type === 'simple') {
         text = (data as SimpleData).key
+        fieldLabel = 'Key'
       } else {
         text = field === 'appId' ? (data as PairData).appId : (data as PairData).appSecret
+        fieldLabel = field === 'appId' ? 'ID' : 'Secret'
       }
 
       // 3. 复制到剪贴板
       await navigator.clipboard.writeText(text)
       
-      // 4. 显示反馈
-      setCopying(field)
-      setTimeout(() => setCopying(null), 2000)
+      // 4. 显示 Toast 反馈
+      onShowToast(`${fieldLabel} copied to clipboard`)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Decryption failed')
+      onShowToast(err instanceof Error ? err.message : 'Decryption failed', 'error')
     }
   }
 
@@ -49,6 +54,9 @@ function KeyItem({ item, onDelete }: { item: any, onDelete: (id: string) => Prom
     setDeleting(true)
     try {
       await onDelete(item.id)
+      onShowToast('Key deleted successfully')
+    } catch (err) {
+      onShowToast('Failed to delete key', 'error')
     } finally {
       setDeleting(false)
       setShowConfirm(false)
@@ -71,8 +79,9 @@ function KeyItem({ item, onDelete }: { item: any, onDelete: (id: string) => Prom
             className="btn btn-secondary"
             onClick={() => handleCopy('key')}
             disabled={!isUnlocked}
+            title="Copy API Key"
           >
-            {copying === 'key' ? '✅ Copied' : '📋 Copy Key'}
+            📋 Copy Key
           </button>
         ) : (
           <>
@@ -80,15 +89,17 @@ function KeyItem({ item, onDelete }: { item: any, onDelete: (id: string) => Prom
               className="btn btn-secondary"
               onClick={() => handleCopy('appId')}
               disabled={!isUnlocked}
+              title="Copy App ID"
             >
-              {copying === 'appId' ? '✅ Copied' : '📋 ID'}
+              📋 ID
             </button>
             <button
               className="btn btn-secondary"
               onClick={() => handleCopy('appSecret')}
               disabled={!isUnlocked}
+              title="Copy App Secret"
             >
-              {copying === 'appSecret' ? '✅ Copied' : '📋 Secret'}
+              📋 Secret
             </button>
           </>
         )}
@@ -131,7 +142,13 @@ export function VaultList() {
   const { user } = useAuth()
   const [keys, setKeys] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
   const supabase = useMemo(() => createBrowserClient(), [])
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 2000)
+  }
 
   const fetchKeys = async () => {
     if (!user) return
@@ -174,6 +191,11 @@ export function VaultList() {
 
   return (
     <section className="vault-section">
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>
+          {toast.message}
+        </div>
+      )}
       <div className="vault-header">
         <h2 className="vault-title">Your Vault</h2>
         <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{keys.length} items</span>
@@ -193,7 +215,7 @@ export function VaultList() {
       ) : (
         <div className="vault-grid">
           {keys.map((item) => (
-            <KeyItem key={item.id} item={item} onDelete={handleDeleteKey} />
+            <KeyItem key={item.id} item={item} onDelete={handleDeleteKey} onShowToast={showToast} />
           ))}
         </div>
       )}

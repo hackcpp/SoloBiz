@@ -18,7 +18,7 @@ export function LoginPage() {
       <div className="login-card animate-fade-in">
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛡️</div>
         <h1>KeyNexus</h1>
-        <p>Smart Key Vault for Developers.<br />Securely sync your API keys with zero-knowledge encryption.</p>
+        <p>Smart Key Vault for Developers.</p>
 
         <button
           type="button"
