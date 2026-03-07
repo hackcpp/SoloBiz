@@ -1,14 +1,14 @@
 'use client'
 
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useMemo } from 'react'
 
 /**
  * 主密码上下文接口
- * 提供固定的主密码和解锁状态
+ * 提供主密码和解锁状态（环境变量固定模式）
  */
 interface MasterPasswordContextValue {
-  masterPassword: string  // 固定的主密码
-  isUnlocked: boolean     // 是否已解锁（始终为true）
+  masterPassword: string | null
+  isUnlocked: boolean
 }
 
 const MasterPasswordContext = createContext<MasterPasswordContextValue | null>(null)
@@ -16,15 +16,19 @@ const MasterPasswordContext = createContext<MasterPasswordContextValue | null>(n
 /**
  * 主密码提供者组件
  *
- * 简化版本：使用固定的主密码，避免用户输入
- * 在生产环境中应该实现安全的密码输入和管理
+ * 简化模式：直接从环境变量读取主密码
+ * 适用于特定部署环境或简化测试场景
  */
 export function MasterPasswordProvider({ children }: { children: React.ReactNode }) {
+  const masterPassword = useMemo(() => {
+    return process.env.NEXT_PUBLIC_MASTER_PASSWORD || null
+  }, [])
+
   return (
     <MasterPasswordContext.Provider
       value={{
-        masterPassword: 'Ziyou@2026',  // 固定的主密码
-        isUnlocked: true,               // 始终处于解锁状态
+        masterPassword,
+        isUnlocked: !!masterPassword,
       }}
     >
       {children}

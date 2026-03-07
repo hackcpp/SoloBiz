@@ -2,174 +2,167 @@
 
 import { useState, useMemo } from 'react'
 import { useMasterPassword } from '@/components/providers/MasterPasswordProvider'
-import { useAuth } from '@/components/providers/AuthProvider'
-import { createBrowserClient } from '@/lib/supabase/client'
 import { encrypt } from '@/lib/crypto'
-import type { SimpleData, PairData } from '@/lib/crypto'
+import { createBrowserClient } from '@/lib/supabase/client'
+import { useAuth } from '@/components/providers/AuthProvider'
 
 /**
- * 密钥类型：简单密钥或 ID+密钥 对
- */
-type TabType = 'simple' | 'pair'
-
-/**
- * 密钥添加表单组件
- *
- * 支持两种密钥类型：
- * - 简单 Key：单个 API 密钥
- * - ID + Secret：应用 ID 和密钥对
- *
- * 功能：
- * - 表单验证和提交
- * - 客户端加密后保存到 Supabase
- * - 实时错误提示
+ * 密钥录入表单组件
  */
 export function KeyForm() {
-  // 表单状态
-  const [tab, setTab] = useState<TabType>('simple')  // 当前选中的标签页
-  const [name, setName] = useState('')               // 服务名称
-  const [simpleKey, setSimpleKey] = useState('')     // 简单密钥
-  const [appId, setAppId] = useState('')             // 应用 ID
-  const [appSecret, setAppSecret] = useState('')     // 应用密钥
-  const [submitting, setSubmitting] = useState(false) // 提交状态
-  const [error, setError] = useState<string | null>(null) // 错误信息
-
-  // 依赖注入
-  const { masterPassword } = useMasterPassword()
   const { user } = useAuth()
+  const { masterPassword, isUnlocked } = useMasterPassword()
   const supabase = useMemo(() => createBrowserClient(), [])
+  
+  const [type, setType] = useState<'simple' | 'pair'>('simple')
+  const [name, setName] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
-  /**
-   * 处理表单提交
-   * 加密数据后保存到数据库
-   */
+  // 表单数据状态
+  const [simpleKey, setSimpleKey] = useState('')
+  const [appId, setAppId] = useState('')
+  const [appSecret, setAppSecret] = useState('')
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-
-    // 基础验证
-    if (!masterPassword || !user) {
-      setError('请先登录')
-      return
-    }
-    if (!name.trim()) {
-      setError('Please enter the name' )
+    
+    if (!user) {
+      showToast('Please sign in first', 'error')
       return
     }
 
-    setSubmitting(true)
+    if (!masterPassword) {
+      showToast('Master Password not set', 'error')
+      return
+    }
+
+    setLoading(true)
     try {
-      const data: SimpleData | PairData =
-        tab === 'simple'
-          ? { key: simpleKey }
-          : { appId, appSecret }
+      // 1. 准备加密载荷
+      const payload = type === 'simple'
+        ? { key: simpleKey }
+        : { appId, appSecret }
 
-      const { ciphertext, iv, salt } = await encrypt(masterPassword, data)
+      // 2. 客户端加密
+      const { ciphertext, iv, salt } = await encrypt(
+        masterPassword,
+        payload
+      )
 
-      const { error: dbError } = await supabase.from('api_keys').insert({
+      // 3. 存储到 Supabase
+      const { error } = await supabase.from('api_keys').insert({
         user_id: user.id,
-        name: name.trim(),
-        type: tab,
+        name,
+        type,
         encrypted_payload: ciphertext,
         iv,
-        salt,
+        salt
       })
 
-      if (dbError) throw dbError
+      if (error) throw error
 
+      // 4. 重置表单并触发刷新
       setName('')
       setSimpleKey('')
       setAppId('')
       setAppSecret('')
       window.dispatchEvent(new CustomEvent('keynexus:refresh'))
+      showToast('Key saved securely!')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed')
+      console.error('Save failed:', err)
+      showToast('Failed to save key', 'error')
     } finally {
-      setSubmitting(false)
+      setLoading(false)
     }
   }
 
-  const canSubmit = name.trim() && (tab === 'simple' ? simpleKey : appId && appSecret)
-
   return (
-    <div className="form-card">
-      <div className="form-tabs">
+    <section className="form-card animate-fade-in">
+      {toast && (
+        <div className={`toast toast-${toast.type}`}>
+          {toast.message}
+        </div>
+      )}
+      <div className="tabs">
         <button
-          type="button"
-          className={`form-tab ${tab === 'simple' ? 'active' : ''}`}
-          onClick={() => setTab('simple')}
+          className={`tab ${type === 'simple' ? 'active' : ''}`}
+          onClick={() => setType('simple')}
         >
-          Key
+          Simple Key
         </button>
         <button
-          type="button"
-          className={`form-tab ${tab === 'pair' ? 'active' : ''}`}
-          onClick={() => setTab('pair')}
+          className={`tab ${type === 'pair' ? 'active' : ''}`}
+          onClick={() => setType('pair')}
         >
           ID + Secret
         </button>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="form-fields">
-          <div className="form-field">
-            <label>Name</label>
+        <div className="form-group">
+          <label>name</label>
+          <input
+            className="input"
+            placeholder="e.g. OpenAI, AWS Production..."
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+
+        {type === 'simple' ? (
+          <div className="form-group">
+            <label>API Key</label>
             <input
-              type="text"
-              placeholder="e.g.: GitHub Token"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              className="input"
+              type="password"
+              placeholder="sk-..."
+              value={simpleKey}
+              onChange={(e) => setSimpleKey(e.target.value)}
+              required
             />
           </div>
-
-          {tab === 'simple' ? (
-            <div className="form-field">
-              <label>API Key</label>
+        ) : (
+          <>
+            <div className="form-group">
+              <label>App ID / Client ID</label>
               <input
-                type="password"
-                placeholder="sk-xxx..."
-                value={simpleKey}
-                onChange={(e) => setSimpleKey(e.target.value)}
+                className="input"
+                placeholder="Enter ID"
+                value={appId}
+                onChange={(e) => setAppId(e.target.value)}
+                required
               />
             </div>
-          ) : (
-            <>
-              <div className="form-field">
-                <label>App ID</label>
-                <input
-                  type="text"
-                  placeholder="wx..."
-                  value={appId}
-                  onChange={(e) => setAppId(e.target.value)}
-                />
-              </div>
-              <div className="form-field">
-                <label>App Secret</label>
-                <input
-                  type="password"
-                  placeholder="sct..."
-                  value={appSecret}
-                  onChange={(e) => setAppSecret(e.target.value)}
-                />
-              </div>
-            </>
-          )}
-        </div>
-
-        {error && (
-          <p style={{ color: 'var(--danger)', fontSize: 13, marginTop: 12 }}>{error}</p>
+            <div className="form-group">
+              <label>App Secret</label>
+              <input
+                className="input"
+                type="password"
+                placeholder="Enter Secret"
+                value={appSecret}
+                onChange={(e) => setAppSecret(e.target.value)}
+                required
+              />
+            </div>
+          </>
         )}
 
-        <div className="form-actions">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={!canSubmit || submitting}
-          >
-            {submitting ? 'Saving...' : 'Save'}
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          style={{ width: '100%', marginTop: '8px' }}
+          disabled={loading || (type === 'simple' ? !simpleKey : (!appId || !appSecret)) || !name}
+        >
+          {loading ? 'Saving...' : 'Securely Save Key'}
+        </button>
       </form>
-    </div>
+    </section>
   )
 }
