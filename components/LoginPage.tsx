@@ -18,7 +18,7 @@ export function LoginPage() {
       <div className="login-card">
         {/* 应用标题和标语 */}
         <h1>KeyNexus</h1>
-        <p>智能密钥保险箱 · 零知识加密，安全同步</p>
+        <p>Smart Key Vault · Secure Sync</p>
 
         {/* Google 登录按钮 */}
         <button
@@ -27,7 +27,7 @@ export function LoginPage() {
           onClick={() => signInWithGoogle()}
           style={{ width: '100%', padding: '12px' }}
         >
-          使用 Google 登录
+          Sign in with Google
         </button>
       </div>
     </div>

@@ -31,7 +31,7 @@ export function Header() {
       </div>
       {/* 登出按钮 */}
       <button type="button" className="btn btn-secondary" onClick={handleLogout}>
-        退出
+        Sign Out
       </button>
     </header>
   )

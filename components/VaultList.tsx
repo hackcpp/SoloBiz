@@ -77,7 +77,7 @@ export function VaultList() {
       await navigator.clipboard.writeText(text)
       return true
     } catch {
-      setError('复制失败')
+      setError('Copy failed')
       return false
     }
   }
@@ -92,11 +92,11 @@ export function VaultList() {
         salt: record.salt,
       })
       if (await copyToClipboard(data.key)) {
-        setSuccessMessage(`${record.name} 的 Key 已复制到剪贴板`)
+        setSuccessMessage(`${record.name} Secret copied to clipboard`)
         setTimeout(() => setSuccessMessage(null), 3000)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '密码校验失败')
+      setError(err instanceof Error ? err.message : 'Password verification failed')
     }
   }
 
@@ -110,11 +110,11 @@ export function VaultList() {
         salt: record.salt,
       })
       if (await copyToClipboard(data.appId)) {
-        setSuccessMessage(`${record.name} 的 ID 已复制到剪贴板`)
+        setSuccessMessage(`${record.name} Key copied to clipboard`)
         setTimeout(() => setSuccessMessage(null), 3000)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '密码校验失败')
+      setError(err instanceof Error ? err.message : 'Password verification failed')
     }
   }
 
@@ -128,7 +128,7 @@ export function VaultList() {
         salt: record.salt,
       })
       if (await copyToClipboard(data.appSecret)) {
-        setSuccessMessage(`${record.name} 的 Secret 已复制到剪贴板`)
+        setSuccessMessage(`${record.name} Secret copied to clipboard`)
         setTimeout(() => setSuccessMessage(null), 3000)
       }
     } catch (err) {
@@ -150,11 +150,11 @@ export function VaultList() {
   const getTypeLabel = (type: string) => (type === 'simple' ? '简单 Key' : 'ID + Secret')
   const getTypeIcon = (type: string) => (type === 'simple' ? '🔑' : '🔐')
 
-  if (loading) return <div className="vault-section">加载中...</div>
+  if (loading) return <div className="vault-section">Loading...</div>
 
   return (
     <section className="vault-section">
-      <h2>密钥库</h2>
+      <h2>Key Vault</h2>
       {successMessage && (
         <p style={{ color: 'var(--success)', fontSize: 14, marginBottom: 12 }}>{successMessage}</p>
       )}
@@ -162,7 +162,7 @@ export function VaultList() {
         <p style={{ color: 'var(--danger)', fontSize: 14, marginBottom: 12 }}>{error}</p>
       )}
       {items.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)' }}>暂无密钥，请先添加</p>
+        <p style={{ color: 'var(--text-muted)' }}>No keys yet, please add some first</p>
       ) : (
         <div className="vault-list">
           {items.map((record) => (
@@ -183,7 +183,7 @@ export function VaultList() {
                     disabled={!isUnlocked}
                     onClick={() => handleCopyKey(record)}
                   >
-                    复制 Key
+                    Copy Key
                   </button>
                 ) : (
                   <>
@@ -193,7 +193,7 @@ export function VaultList() {
                       disabled={!isUnlocked}
                       onClick={() => handleCopyId(record)}
                     >
-                      复制 ID
+                      Copy ID
                     </button>
                     <button
                       type="button"
@@ -201,7 +201,7 @@ export function VaultList() {
                       disabled={!isUnlocked}
                       onClick={() => handleCopySecret(record)}
                     >
-                      复制 Secret
+                      Copy Secret
                     </button>
                   </>
                 )}

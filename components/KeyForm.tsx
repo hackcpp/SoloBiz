@@ -53,7 +53,7 @@ export function KeyForm() {
       return
     }
     if (!name.trim()) {
-      setError('请输入服务名称')
+      setError('Please enter the name' )
       return
     }
 
@@ -83,7 +83,7 @@ export function KeyForm() {
       setAppSecret('')
       window.dispatchEvent(new CustomEvent('keynexus:refresh'))
     } catch (err) {
-      setError(err instanceof Error ? err.message : '保存失败')
+      setError(err instanceof Error ? err.message : 'Save failed')
     } finally {
       setSubmitting(false)
     }
@@ -99,7 +99,7 @@ export function KeyForm() {
           className={`form-tab ${tab === 'simple' ? 'active' : ''}`}
           onClick={() => setTab('simple')}
         >
-          简单 Key
+          Key
         </button>
         <button
           type="button"
@@ -113,10 +113,10 @@ export function KeyForm() {
       <form onSubmit={handleSubmit}>
         <div className="form-fields">
           <div className="form-field">
-            <label>服务名称</label>
+            <label>Name</label>
             <input
               type="text"
-              placeholder="如：Github Token"
+              placeholder="e.g.: GitHub Token"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
@@ -166,7 +166,7 @@ export function KeyForm() {
             className="btn btn-primary"
             disabled={!canSubmit || submitting}
           >
-            {submitting ? '保存中...' : '保存'}
+            {submitting ? 'Saving...' : 'Save'}
           </button>
         </div>
       </form>

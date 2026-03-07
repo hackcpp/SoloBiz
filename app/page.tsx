@@ -20,7 +20,7 @@ function Dashboard() {
   if (loading) {
     return (
       <main>
-        <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>加载中...</p>
+        <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Loading...</p>
       </main>
     )
   }
