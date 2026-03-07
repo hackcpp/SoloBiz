@@ -126,6 +126,7 @@ main {
   padding: 24px;
   margin-bottom: 32px;
   box-shadow: var(--shadow);
+  transition: all 0.3s ease;
 }
 
 .tabs {
@@ -166,8 +167,17 @@ main {
   font-weight: 600;
   color: var(--text-muted);
   margin-bottom: 6px;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.form-dynamic-area {
+  min-height: 140px; /* 两行表单项的高度 */
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.form-dynamic-area .form-group {
+  margin-bottom: 16px;
 }
 
 .input {

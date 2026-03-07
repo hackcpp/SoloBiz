@@ -106,7 +106,7 @@ export function KeyForm() {
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>name</label>
+          <label>Name</label>
           <input
             className="input"
             placeholder="e.g. OpenAI, AWS Production..."
@@ -116,43 +116,45 @@ export function KeyForm() {
           />
         </div>
 
-        {type === 'simple' ? (
-          <div className="form-group">
-            <label>API Key</label>
-            <input
-              className="input"
-              type="password"
-              placeholder="sk-..."
-              value={simpleKey}
-              onChange={(e) => setSimpleKey(e.target.value)}
-              required
-            />
-          </div>
-        ) : (
-          <>
-            <div className="form-group">
-              <label>App ID / Client ID</label>
-              <input
-                className="input"
-                placeholder="Enter ID"
-                value={appId}
-                onChange={(e) => setAppId(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>App Secret</label>
+        <div className={`form-dynamic-area ${type}`}>
+          {type === 'simple' ? (
+            <div className="form-group animate-fade-in">
+              <label>API Key</label>
               <input
                 className="input"
                 type="password"
-                placeholder="Enter Secret"
-                value={appSecret}
-                onChange={(e) => setAppSecret(e.target.value)}
+                placeholder="sk-..."
+                value={simpleKey}
+                onChange={(e) => setSimpleKey(e.target.value)}
                 required
               />
             </div>
-          </>
-        )}
+          ) : (
+            <div className="animate-fade-in">
+              <div className="form-group">
+                <label>App ID / Client ID</label>
+                <input
+                  className="input"
+                  placeholder="Enter ID"
+                  value={appId}
+                  onChange={(e) => setAppId(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>App Secret</label>
+                <input
+                  className="input"
+                  type="password"
+                  placeholder="Enter Secret"
+                  value={appSecret}
+                  onChange={(e) => setAppSecret(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+          )}
+        </div>
 
         <button
           type="submit"
