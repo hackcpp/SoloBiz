@@ -73,7 +73,7 @@ export function KeyForm() {
       setAppId('')
       setAppSecret('')
       window.dispatchEvent(new CustomEvent('keynexus:refresh'))
-      showToast('Key saved securely!')
+      showToast('Saved securely!')
     } catch (err) {
       console.error('Save failed:', err)
       showToast('Failed to save key', 'error')
@@ -162,7 +162,7 @@ export function KeyForm() {
           style={{ width: '100%', marginTop: '8px' }}
           disabled={loading || (type === 'simple' ? !simpleKey : (!appId || !appSecret)) || !name}
         >
-          {loading ? 'Saving...' : 'Securely Save Key'}
+          {loading ? 'Saving...' : 'Securely Save'}
         </button>
       </form>
     </section>
