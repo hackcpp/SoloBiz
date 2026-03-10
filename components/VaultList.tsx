@@ -212,7 +212,8 @@ export function VaultList() {
     if (error) {
       alert('Delete failed: ' + error.message)
     } else {
-      fetchKeys()
+      // 本地同步移除已删除的条目，避免整列表重新加载带来的抖动
+      setKeys((prev) => prev.filter((item) => item.id !== id))
     }
   }
 
