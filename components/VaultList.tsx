@@ -54,7 +54,7 @@ function KeyItem({ item, onDelete, onShowToast }: {
     setDeleting(true)
     try {
       await onDelete(item.id)
-      onShowToast('Key deleted successfully')
+      onShowToast('Deleted successfully')
     } catch (err) {
       onShowToast('Failed to delete key', 'error')
     } finally {
@@ -89,7 +89,7 @@ function KeyItem({ item, onDelete, onShowToast }: {
               className="btn btn-secondary btn-copy"
               onClick={() => handleCopy('appId')}
               disabled={!isUnlocked}
-              title="Copy App ID"
+              title="Copy ID"
             >
               🏷️ ID
             </button>
@@ -97,7 +97,7 @@ function KeyItem({ item, onDelete, onShowToast }: {
               className="btn btn-secondary btn-copy"
               onClick={() => handleCopy('appSecret')}
               disabled={!isUnlocked}
-              title="Copy App Secret"
+              title="Copy Secret"
             >
               🔒 Secret
             </button>

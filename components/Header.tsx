@@ -17,17 +17,16 @@ export function Header() {
     signOut()
   }, [signOut])
 
-  // 格式化用户邮箱显示
-  const email = user?.email ?? ''
-  const displayEmail = email.length > 24 ? email.slice(0, 21) + '...' : email
-
   return (
     <header className="header animate-fade-in">
-      <div className="user-info">
-        Logged in as: <strong>{displayEmail}</strong>
-      </div>
-      <button type="button" className="btn btn-ghost" onClick={handleLogout}>
-        Sign Out
+      <button
+        type="button"
+        className="btn btn-ghost"
+        onClick={handleLogout}
+        style={{ marginLeft: 'auto', fontWeight: 600, gap: '8px' }}
+      >
+        <span>Sign Out</span>
+        <span aria-hidden="true">↗</span>
       </button>
     </header>
   )
