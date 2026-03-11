@@ -2,9 +2,11 @@
 
 import { useState, useMemo } from 'react'
 import { useMasterPassword } from '@/components/providers/MasterPasswordProvider'
+import { useToast } from '@/components/providers/ToastProvider'
 import { encrypt } from '@/lib/crypto'
 import { createBrowserClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/providers/AuthProvider'
+import { logError } from '@/lib/logger'
 
 /**
  * 密钥录入表单组件
@@ -12,22 +14,17 @@ import { useAuth } from '@/components/providers/AuthProvider'
 export function KeyForm() {
   const { user } = useAuth()
   const { masterPassword } = useMasterPassword()
+  const { showToast } = useToast()
   const supabase = useMemo(() => createBrowserClient(), [])
-  
+
   const [type, setType] = useState<'simple' | 'pair'>('simple')
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
-  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
   // 表单数据状态
   const [simpleKey, setSimpleKey] = useState('')
   const [appId, setAppId] = useState('')
   const [appSecret, setAppSecret] = useState('')
-
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 2000)
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,7 +72,7 @@ export function KeyForm() {
       window.dispatchEvent(new CustomEvent('keynexus:refresh'))
       showToast('Saved securely!')
     } catch (err) {
-      console.error('Save failed:', err)
+      logError('Failed to save key', err)
       showToast('Failed to save key', 'error')
     } finally {
       setLoading(false)
@@ -84,11 +81,6 @@ export function KeyForm() {
 
   return (
     <section className="form-card animate-fade-in">
-      {toast && (
-        <div className={`toast toast-${toast.type}`}>
-          {toast.message}
-        </div>
-      )}
       <div className="tabs">
         <button
           className={`tab ${type === 'simple' ? 'active' : ''}`}

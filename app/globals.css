@@ -329,10 +329,17 @@ main {
 }
 
 /* Toast Notification */
-.toast {
+.toast-container {
   position: fixed;
   bottom: 24px;
   right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.toast {
   background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text);
@@ -342,7 +349,6 @@ main {
   display: flex;
   align-items: center;
   gap: 10px;
-  z-index: 1000;
   animation: slideIn 0.3s ease-out;
 }
 

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { logError } from '@/lib/logger'
 
 /**
  * 创建 Supabase 浏览器客户端
@@ -17,7 +18,7 @@ export function createBrowserClient() {
   // 在构建环境下（Prerendering），我们允许缺失，以避免构建失败
   if (!url || !key) {
     if (typeof window !== 'undefined') {
-      console.error('Missing Supabase environment variables. Check your .env.local file.')
+      logError('Missing Supabase environment variables. Check your .env.local file.')
     }
     // 返回一个空的或者最小化的 client 占位符，避免在构建时崩溃
     // 但这可能导致调用其方法时报错。更安全的做法是返回 null，并让调用方处理

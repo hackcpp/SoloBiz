@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useMasterPassword } from '@/components/providers/MasterPasswordProvider'
+import { useToast } from '@/components/providers/ToastProvider'
 import { decrypt, type PayloadData, type SimpleData, type PairData } from '@/lib/crypto'
 import { createBrowserClient } from '@/lib/supabase/client'
 
@@ -19,11 +20,11 @@ type KeyItemProps = {
     salt: string
     created_at: string
   }
-  onDelete: (id: string) => Promise<void>,
-  onShowToast: (msg: string, type?: 'success' | 'error') => void
+  onDelete: (id: string) => Promise<void>
 }
 
-function KeyItem({ item, onDelete, onShowToast }: KeyItemProps) {
+function KeyItem({ item, onDelete }: KeyItemProps) {
+  const { showToast } = useToast()
   const { masterPassword, isUnlocked } = useMasterPassword()
   const [deleting, setDeleting] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -74,9 +75,9 @@ function KeyItem({ item, onDelete, onShowToast }: KeyItemProps) {
       await navigator.clipboard.writeText(text)
       
       // 4. 显示 Toast 反馈
-      onShowToast(`${fieldLabel} copied to clipboard`)
+      showToast(`${fieldLabel} copied to clipboard`)
     } catch (error) {
-      onShowToast(error instanceof Error ? error.message : 'Decryption failed', 'error')
+      showToast(error instanceof Error ? error.message : 'Decryption failed', 'error')
     }
   }
 
@@ -84,9 +85,9 @@ function KeyItem({ item, onDelete, onShowToast }: KeyItemProps) {
     setDeleting(true)
     try {
       await onDelete(item.id)
-      onShowToast('Deleted successfully')
+      showToast('Deleted successfully')
     } catch {
-      onShowToast('Failed to delete key', 'error')
+      showToast('Failed to delete key', 'error')
     } finally {
       setDeleting(false)
       setShowConfirm(false)
@@ -172,14 +173,8 @@ export function VaultList() {
   const { user } = useAuth()
   const [keys, setKeys] = useState<KeyItemProps['item'][]>([])
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
   const [search, setSearch] = useState('')
   const supabase = useMemo(() => createBrowserClient(), [])
-
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 2000)
-  }
 
   const filteredKeys = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -242,11 +237,6 @@ export function VaultList() {
 
   return (
     <section className="vault-section">
-      {toast && (
-        <div className={`toast toast-${toast.type}`}>
-          {toast.message}
-        </div>
-      )}
       <div className="vault-header">
         <h2 className="vault-title">Your Vault</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -284,7 +274,7 @@ export function VaultList() {
       ) : (
         <div className="vault-grid">
           {filteredKeys.map((item) => (
-            <KeyItem key={item.id} item={item} onDelete={handleDeleteKey} onShowToast={showToast} />
+            <KeyItem key={item.id} item={item} onDelete={handleDeleteKey} />
           ))}
         </div>
       )}

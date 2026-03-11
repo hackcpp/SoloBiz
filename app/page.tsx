@@ -2,6 +2,7 @@
 
 import { AuthProvider, useAuth } from '@/components/providers/AuthProvider'
 import { MasterPasswordProvider } from '@/components/providers/MasterPasswordProvider'
+import { ToastProvider } from '@/components/providers/ToastProvider'
 import { LoginPage } from '@/components/LoginPage'
 import { Header } from '@/components/Header'
 import { KeyForm } from '@/components/KeyForm'
@@ -48,8 +49,10 @@ function Dashboard() {
  */
 export default function Home() {
   return (
-    <AuthProvider>
-      <Dashboard />
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <Dashboard />
+      </AuthProvider>
+    </ToastProvider>
   )
 }
