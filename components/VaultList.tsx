@@ -163,11 +163,14 @@ function KeyItem({ item, onDelete }: KeyItemProps) {
 /**
  * 密钥库列表组件
  */
+const PAGE_SIZE = 10
+
 export function VaultList() {
   const { user } = useAuth()
   const [keys, setKeys] = useState<KeyItemProps['item'][]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
   const supabase = useMemo(() => createBrowserClient(), [])
 
   const filteredKeys = useMemo(() => {
@@ -188,6 +191,10 @@ export function VaultList() {
       return tokens.every((token) => haystack.includes(token))
     })
   }, [keys, search])
+
+  const totalPages = Math.max(1, Math.ceil(filteredKeys.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pagedKeys = filteredKeys.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   const fetchKeys = async () => {
     if (!user) return
@@ -239,7 +246,10 @@ export function VaultList() {
             type="text"
             className="input"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
             placeholder="搜索名称/类型..."
             style={{
               maxWidth: '220px',
@@ -260,11 +270,34 @@ export function VaultList() {
             : '未找到匹配的密钥'}
         </div>
       ) : (
-        <div className="vault-grid">
-          {filteredKeys.map((item) => (
-            <KeyItem key={item.id} item={item} onDelete={handleDeleteKey} />
-          ))}
-        </div>
+        <>
+          <div className="vault-grid">
+            {pagedKeys.map((item) => (
+              <KeyItem key={item.id} item={item} onDelete={handleDeleteKey} />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="pagination">
+              <button
+                className="btn btn-ghost"
+                disabled={currentPage <= 1}
+                onClick={() => setPage(currentPage - 1)}
+              >
+                ◀ 上一页
+              </button>
+              <span className="pagination-info">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                className="btn btn-ghost"
+                disabled={currentPage >= totalPages}
+                onClick={() => setPage(currentPage + 1)}
+              >
+                下一页 ▶
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   )
