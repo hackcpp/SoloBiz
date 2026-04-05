@@ -36,7 +36,7 @@ const TOOLTIP_STYLE = {
   labelStyle: { color: '#ededf2' },
 }
 
-type ViewMode = 'year' | 'month'
+type ViewMode = 'all' | 'year' | 'month'
 
 export function LedgerStats() {
   const { user } = useAuth()
@@ -46,7 +46,7 @@ export function LedgerStats() {
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
-  const [viewMode, setViewMode] = useState<ViewMode>('year')
+  const [viewMode, setViewMode] = useState<ViewMode>('all')
   const [allEntries, setAllEntries] = useState<DecryptedLedgerEntry[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -98,7 +98,8 @@ export function LedgerStats() {
     return allEntries.filter((e) => e.date.startsWith(prefix))
   }, [allEntries, year, month])
 
-  const currentEntries = viewMode === 'year' ? yearEntries : monthEntries
+  const currentEntries =
+    viewMode === 'all' ? allEntries : viewMode === 'year' ? yearEntries : monthEntries
 
   const totalIncome = currentEntries
     .filter((e) => e.type === 'income')
@@ -107,6 +108,23 @@ export function LedgerStats() {
     .filter((e) => e.type === 'expense')
     .reduce((s, e) => s + e.amount, 0)
   const balance = totalIncome - totalExpense
+
+  const availableYears = useMemo(() => {
+    const years = new Set(allEntries.map((e) => parseInt(e.date.slice(0, 4))))
+    if (years.size === 0) years.add(now.getFullYear())
+    return Array.from(years).sort()
+  }, [allEntries])
+
+  const yearlyData = useMemo(() => {
+    return availableYears.map((y) => {
+      const items = allEntries.filter((e) => e.date.startsWith(`${y}-`))
+      return {
+        year: `${y}`,
+        收入: items.filter((e) => e.type === 'income').reduce((s, e) => s + e.amount, 0),
+        支出: items.filter((e) => e.type === 'expense').reduce((s, e) => s + e.amount, 0),
+      }
+    })
+  }, [allEntries, availableYears])
 
   const monthlyData = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
@@ -133,8 +151,8 @@ export function LedgerStats() {
       .sort((a, b) => b.value - a.value)
   }, [currentEntries])
 
-  const periodLabel = viewMode === 'year' ? `${year}年` : `${month}月`
-  const summaryLabel = viewMode === 'year' ? '年度' : '本月'
+  const summaryLabel = viewMode === 'all' ? '累计' : viewMode === 'year' ? '年度' : '本月'
+  const periodLabel = viewMode === 'all' ? '全部' : viewMode === 'year' ? `${year}年` : `${month}月`
 
   if (loading) {
     return (
@@ -150,6 +168,13 @@ export function LedgerStats() {
         <div className="tabs" style={{ marginBottom: 0, width: 'auto' }}>
           <button
             type="button"
+            className={`tab ${viewMode === 'all' ? 'active' : ''}`}
+            onClick={() => setViewMode('all')}
+          >
+            全部
+          </button>
+          <button
+            type="button"
             className={`tab ${viewMode === 'year' ? 'active' : ''}`}
             onClick={() => setViewMode('year')}
           >
@@ -163,8 +188,8 @@ export function LedgerStats() {
             按月
           </button>
         </div>
-        {viewMode === 'year' ? (
-          <div className="month-picker" style={{ marginBottom: 0 }}>
+        {viewMode === 'year' && (
+          <div className="month-picker">
             <button type="button" className="btn btn-ghost" onClick={() => setYear(year - 1)}>
               ◀
             </button>
@@ -173,7 +198,8 @@ export function LedgerStats() {
               ▶
             </button>
           </div>
-        ) : (
+        )}
+        {viewMode === 'month' && (
           <MonthPicker
             year={year}
             month={month}
@@ -203,15 +229,27 @@ export function LedgerStats() {
       </div>
 
       <div className="chart-section">
-        <div className="chart-title">{year}年月度收支</div>
+        <div className="chart-title">
+          {viewMode === 'all' ? '年度收支趋势' : `${year}年月度收支`}
+        </div>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={monthlyData}>
-            <XAxis dataKey="month" tick={{ fill: '#9090a0', fontSize: 12 }} />
-            <YAxis tick={{ fill: '#9090a0', fontSize: 12 }} />
-            <Tooltip {...TOOLTIP_STYLE} />
-            <Bar dataKey="收入" fill="#10b981" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="支出" fill="#ef4444" radius={[4, 4, 0, 0]} />
-          </BarChart>
+          {viewMode === 'all' ? (
+            <BarChart data={yearlyData}>
+              <XAxis dataKey="year" tick={{ fill: '#9090a0', fontSize: 12 }} />
+              <YAxis tick={{ fill: '#9090a0', fontSize: 12 }} />
+              <Tooltip {...TOOLTIP_STYLE} />
+              <Bar dataKey="收入" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="支出" fill="#ef4444" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          ) : (
+            <BarChart data={monthlyData}>
+              <XAxis dataKey="month" tick={{ fill: '#9090a0', fontSize: 12 }} />
+              <YAxis tick={{ fill: '#9090a0', fontSize: 12 }} />
+              <Tooltip {...TOOLTIP_STYLE} />
+              <Bar dataKey="收入" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="支出" fill="#ef4444" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          )}
         </ResponsiveContainer>
       </div>
 
