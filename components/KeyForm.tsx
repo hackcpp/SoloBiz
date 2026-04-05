@@ -103,9 +103,15 @@ export function KeyForm() {
           />
         </div>
 
-        <div className={`form-dynamic-area ${type}`}>
-          {type === 'simple' ? (
-            <div className="form-group animate-fade-in">
+        <div className="form-dynamic-area">
+          <div
+            style={{
+              gridArea: '1/1',
+              visibility: type === 'simple' ? 'visible' : 'hidden',
+              pointerEvents: type === 'simple' ? 'auto' : 'none',
+            }}
+          >
+            <div className="form-group">
               <label>API 密钥</label>
               <input
                 className="input"
@@ -113,34 +119,42 @@ export function KeyForm() {
                 placeholder="sk-..."
                 value={simpleKey}
                 onChange={(e) => setSimpleKey(e.target.value)}
-                required
+                required={type === 'simple'}
+                tabIndex={type === 'simple' ? 0 : -1}
               />
             </div>
-          ) : (
-            <div className="animate-fade-in">
-              <div className="form-group">
-                <label>应用 ID</label>
-                <input
-                  className="input"
-                  placeholder="输入 ID"
-                  value={appId}
-                  onChange={(e) => setAppId(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>应用密钥</label>
-                <input
-                  className="input"
-                  type="password"
-                  placeholder="输入密钥"
-                  value={appSecret}
-                  onChange={(e) => setAppSecret(e.target.value)}
-                  required
-                />
-              </div>
+          </div>
+          <div
+            style={{
+              gridArea: '1/1',
+              visibility: type === 'pair' ? 'visible' : 'hidden',
+              pointerEvents: type === 'pair' ? 'auto' : 'none',
+            }}
+          >
+            <div className="form-group">
+              <label>应用 ID</label>
+              <input
+                className="input"
+                placeholder="输入 ID"
+                value={appId}
+                onChange={(e) => setAppId(e.target.value)}
+                required={type === 'pair'}
+                tabIndex={type === 'pair' ? 0 : -1}
+              />
             </div>
-          )}
+            <div className="form-group">
+              <label>应用密钥</label>
+              <input
+                className="input"
+                type="password"
+                placeholder="输入密钥"
+                value={appSecret}
+                onChange={(e) => setAppSecret(e.target.value)}
+                required={type === 'pair'}
+                tabIndex={type === 'pair' ? 0 : -1}
+              />
+            </div>
+          </div>
         </div>
 
         <button
