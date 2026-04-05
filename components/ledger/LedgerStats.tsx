@@ -7,8 +7,8 @@ import { decrypt } from '@/lib/crypto'
 import { createBrowserClient } from '@/lib/supabase/client'
 import { MonthPicker } from './MonthPicker'
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -17,6 +17,7 @@ import {
   Pie,
   Cell,
   Legend,
+  CartesianGrid,
 } from 'recharts'
 import type { LedgerEntryData, LedgerEntryRecord, DecryptedLedgerEntry } from '@/types'
 
@@ -234,23 +235,53 @@ export function LedgerStats() {
         </div>
         {viewMode === 'month' ? (
           <ResponsiveContainer key="monthly" width="100%" height={300}>
-            <BarChart data={monthlyData}>
+            <LineChart data={monthlyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#262630" />
               <XAxis dataKey="month" tick={{ fill: '#9090a0', fontSize: 12 }} />
               <YAxis tick={{ fill: '#9090a0', fontSize: 12 }} />
               <Tooltip {...TOOLTIP_STYLE} />
-              <Bar dataKey="收入" fill="#10b981" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="支出" fill="#ef4444" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="收入"
+                stroke="#10b981"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="支出"
+                stroke="#ef4444"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         ) : (
           <ResponsiveContainer key="yearly" width="100%" height={300}>
-            <BarChart data={yearlyData}>
+            <LineChart data={yearlyData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#262630" />
               <XAxis dataKey="year" tick={{ fill: '#9090a0', fontSize: 12 }} />
               <YAxis tick={{ fill: '#9090a0', fontSize: 12 }} />
               <Tooltip {...TOOLTIP_STYLE} />
-              <Bar dataKey="收入" fill="#10b981" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="支出" fill="#ef4444" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="收入"
+                stroke="#10b981"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="支出"
+                stroke="#ef4444"
+                strokeWidth={2}
+                dot={{ r: 4 }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
           </ResponsiveContainer>
         )}
       </div>
