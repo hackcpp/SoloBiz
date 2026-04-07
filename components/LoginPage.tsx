@@ -12,7 +12,7 @@ export function LoginPage() {
         <h1>
           Solo<span>Biz</span>
         </h1>
-        <p>密钥管理 · 收支记账 · 一站搞定</p>
+        <p className="login-tagline">千里之行，始于足下。</p>
 
         <div className="login-buttons">
           <button onClick={() => signInWithGoogle()} className="btn btn-primary">

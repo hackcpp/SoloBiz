@@ -584,6 +584,15 @@ main::before {
   letter-spacing: 0.1em;
 }
 
+.login-card p.login-tagline {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+  letter-spacing: 0.12em;
+  font-family: var(--font-sans);
+  text-align: center;
+}
+
 .login-buttons {
   display: flex;
   flex-direction: column;
